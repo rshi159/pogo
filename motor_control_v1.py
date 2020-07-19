@@ -69,8 +69,8 @@ try:
 #             a=70
 #             b= 87
             #bottom right corner
-#             a=5
-#             b=15
+            a=5
+            b=15
             p.ChangeDutyCycle(convert_angle_to_duty(a))
             q.ChangeDutyCycle(convert_angle_to_duty(120-a))
             r.ChangeDutyCycle(convert_angle_to_duty(120-b))

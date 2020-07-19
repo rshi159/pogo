@@ -47,7 +47,7 @@ class motorController:
     # moves to joint angles. Takes joint angles in radians
     def move_joint(self, arr, debug = False, make_plot=False, actuate=not False):
         steps = 25
-        vel = 100
+        vel = 150
         # offset between planning 0 and actual robot zero in planning angles.
         zero_offset = 70.0*22.64/15.0
         #scale factor from planning to robot angles
