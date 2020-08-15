@@ -2,9 +2,8 @@
 import RPi.GPIO as GPIO
 import time
 
-servoPIN = 17
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(servoPIN, GPIO.OUT)
+GPIO.setup(17, GPIO.OUT)
 GPIO.setup(23,GPIO.OUT)
 GPIO.setup(22,GPIO.OUT)
 GPIO.setup(27,GPIO.OUT)
@@ -12,8 +11,8 @@ GPIO.setup(27,GPIO.OUT)
 def convert_angle_to_duty(angle):
     return angle / 12 + 2
 
-p = GPIO.PWM(servoPIN, 50) # GPIO 17 for PWM with 50Hz
-q = GPIO.PWM(23, 50)
+p = GPIO.PWM(23, 50) # GPIO 17 for PWM with 50Hz
+q = GPIO.PWM(17, 50)
 r = GPIO.PWM(27, 50)
 s = GPIO.PWM(22, 50)
 # 20 ms cycle
@@ -60,7 +59,7 @@ try:
 #             p.ChangeDutyCycle(convert_angle_to_duty(120-i))
 #             q.ChangeDutyCycle(convert_angle_to_duty(i))
 #             time.sleep(0.005)
-        for i in range(0,120,1):
+        for i in range(5,115,1):
 #             p.ChangeDutyCycle(convert_angle_to_duty(i))
 #             q.ChangeDutyCycle(convert_angle_to_duty(120-i))
 #             r.ChangeDutyCycle(convert_angle_to_duty(120-i))
@@ -69,14 +68,18 @@ try:
 #             a=70
 #             b= 87
             #bottom right corner
-            a=5
-            b=15
-            p.ChangeDutyCycle(convert_angle_to_duty(a))
-            q.ChangeDutyCycle(convert_angle_to_duty(120-a))
-            r.ChangeDutyCycle(convert_angle_to_duty(120-b))
-            s.ChangeDutyCycle(convert_angle_to_duty(0))
-            time.sleep(0.015)
-        time.sleep(0.25)
+            p.ChangeDutyCycle(convert_angle_to_duty(i))
+            q.ChangeDutyCycle(convert_angle_to_duty(115-i))
+            r.ChangeDutyCycle(convert_angle_to_duty(i))
+            s.ChangeDutyCycle(convert_angle_to_duty(i))
+            time.sleep(0.005)
+        for i in range(5,115,1):
+            #bottom right corner
+            p.ChangeDutyCycle(convert_angle_to_duty(115-i))
+            q.ChangeDutyCycle(convert_angle_to_duty(i))
+            r.ChangeDutyCycle(convert_angle_to_duty(115-i))
+            s.ChangeDutyCycle(convert_angle_to_duty(115-i))
+            time.sleep(0.005)
 #         for i in range(0,120,1):
 #             p.ChangeDutyCycle(convert_angle_to_duty(120-i))
 #             q.ChangeDutyCycle(convert_angle_to_duty(i))
