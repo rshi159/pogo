@@ -3,7 +3,7 @@ import numpy as np
 from math import pi
 import matplotlib.pyplot as plt
 
-plot = True
+plot = not True
 #calculate theta 1.
 #joint angles associated with corners of device
 #bottom left, bottom right, top left, top right; angles [link1_top, link2]
@@ -15,7 +15,7 @@ calibration = np.array([[33.75, 72],
                 [71,98.25],#0,50
                 [61.5,77.0],#25,0
                 [58.25,94],#25,25
-                [108.25,59.75],#25,50
+                #[108.25,59.75],#25,50
                 [81.25,52],#50,0
                 [47,97],#50,25
                 [45.25,114.75],#50,50
@@ -35,6 +35,25 @@ phone_x = 6.655
 phone_y = 12.5
 dist_x = 4.0
 
+#T2 measured angles between signals corresponding to 0,30,60,90,120 degrees
+regimes = np.array([47.78,41.39,45.37,34.91])
+regimes = np.array([45,45,45,45])
+regime_scaling = regimes / 30 #since 30 degree intervals
+
+T2_actual_vals = np.empty(len(calibration))
+for i in range(len(calibration)):
+    temp = calibration[i,1]
+    reg = 0
+    if temp > 90:
+        reg = 3
+    elif temp > 60:
+        reg = 2
+    elif temp > 30:
+        reg = 1
+    else:
+        reg = 0
+    temp = (temp*regime_scaling[reg])-19*regime_scaling[0]
+    T2_actual_vals[i] = temp
 #same format as calibration
 coordinates = np.array([[0, phone_y],
                [phone_x, phone_y],
@@ -46,7 +65,7 @@ coordinates = np.array([[0, phone_y],
                 [2.5,2.5],
                 [5.0,2.5],
                 [0,5.0],
-                [2.5,5.0],
+                #[2.5,5.0],
                 [5.0,5.0],
                 [0,7.5],
                 [2.5,7.5],
@@ -57,6 +76,7 @@ coordinates = np.array([[0, phone_y],
 
 remove = [1,3]
 calculated = np.empty([len(calibration),2])
+im_length = np.empty([len(calibration)])
                
 # convert radians to degrees
 def rad_to_deg(arr):
@@ -74,7 +94,7 @@ def deg_to_rad(arr):
         print("May Already Be In Radians")
         return (arr/360.0) * 2* pi
 
-#Offset to get T2_star from T2 - T2_offset
+#Offset to get T2_star from T2 - T2_offset. The value is the signal sent to the motor. need to scale for actual angle
 T2_star_offset = deg_to_rad(23.75)
 
 if plot:
@@ -99,7 +119,8 @@ for i in range(len(calibration)):
     j_star = coordinates[i][1]
     x = phone_x + dist_x - i_star
     y = 6.045 - j_star
-    length_c = np.sqrt(np.sum(np.power(x,2) + np.power(y,2)))
+    length_c = np.sqrt(np.power(x,2) + np.power(y,2))
+    im_length[i] = length_c
     angle_c = np.arctan(y/x)
     
 #     T2_expected = pi + T2_offset - np.arccos((np.power(length_c,2)-(np.power(L1,2)+np.power(L2,2)))/(-2*L1*L2))
@@ -136,8 +157,30 @@ for i in range(len(calibration)):
         
         print(L1_plot+np.matmul(rotation_mat, [L2*np.cos(T2_expected), L2*np.sin(T2_expected)]))
         plt.pause(0.5)
+#check c
+print(np.array(deg_to_rad(calibration[:,0])))
+print(np.array(deg_to_rad(calibration[:,1])-T2_star_offset))
+a = np.array(deg_to_rad(calibration[:,0]))
+#b = np.array(deg_to_rad(calibration[:,1])-T2_star_offset)
+b = deg_to_rad(T2_actual_vals)
+
+cal_angle2_fixed = np.array([a.T,b.T]).T
+print(cal_angle2_fixed)
+cal_c = np.square(L1) + np.square(L2) - 2*L1*L2*np.cos(pi-cal_angle2_fixed[:,1])
+cal_c = np.sqrt(cal_c)
+print("===================")
+print(cal_c)
+print(im_length)
+print("%%%%%%%%%%%%%%%%%%%")
+print(deg_to_rad(T2_actual_vals))
+print(calculated[:,1])
+print("&&&&&&&&&&&&&&&&&&&&&")
+print(deg_to_rad(T2_actual_vals)-calculated[:,1])
+
+
 
 T1_planning = np.array([calculated[:,0], np.ones([len(calibration)])]).T
+print(T1_planning)
 T2_planning = np.array([calculated[:,1], np.ones([len(calibration)])]).T
 
 T1_actual = np.array(deg_to_rad(calibration[:,0]))
@@ -160,7 +203,20 @@ print(T1_corrected)
 error = np.mean(np.abs(T1_actual - T1_corrected))
 print("The error is: %f" %(error))
 
-    
+##Plot polar coordinates of T1
+# fig = plt.figure()
+# sz = len(calibration[:,0])
+# #plt.polar(calibration[:,0], np.ones(sz))
+# ax1 = fig.add_subplot(211, projection='polar')
+# c1 = ax1.scatter(calibration[:,0], np.ones(sz), c=range(sz), cmap='hsv', alpha=0.75)
+# ax1.set_xlabel("actual")
+# 
+# #plt.polar(rad_to_deg(calculated[:,0]), np.ones(sz))
+# ax2 = fig.add_subplot(212, projection='polar')
+# c2 = ax2.scatter(rad_to_deg(calculated[:,0]), np.ones(sz), c=range(sz), cmap='hsv', alpha=0.75)
+# ax2.set_xlabel("calculated")
+# plt.show()
+
 if plot:
     plt.draw()
     
